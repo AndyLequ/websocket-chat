@@ -20,3 +20,24 @@ const httpServer = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server: httpServer });
 
 const clients = new Map();
+
+wss.on("connection", (ws) => {
+  let username = null;
+
+  ws.on("message", (raw) => {
+    let msg;
+    try {
+      msg = JSON.parse(raw);
+    } catch {
+      return;
+    }
+
+    if (msg.type === "join") {
+      // register this connection with a username
+      username = msg.username.trim().slice(0, 20) || "Anonymous";
+
+      clients.set(ws, username);
+      console.log(`+ ${username} joined (${clients.size} online)`);
+    }
+  });
+});
