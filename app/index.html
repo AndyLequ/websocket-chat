@@ -68,6 +68,19 @@
         flex-direction: column;
         gap: 8px;
       }
+
+      .msg-row {display: flex; flex-direction: column; max-width: 80%;}
+      .msg-row.me{align-self: flex-end; align-items: flex-end;}
+      .msg-row.other{ align-self: flex-start; align-items: flex-start;}
+
+      .msg-name{ font-size: 11px; color: #888; margin-bottom: 3px;}
+      .msg-bubble{
+        padding: 8px 12px;
+        border-radius: 14px;
+        font-size: 14px;
+        line-height: 1.4;
+        word-break: break-word;
+      }
     </style>
     <link rel="stylesheet" href="style.css" />
     <script defer src="app.js"></script>
