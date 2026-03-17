@@ -67,3 +67,19 @@ wss.on("connection", (ws) => {
 
   ws.on("error", (err) => console.error("WebSocket error:", err));
 });
+
+function broadcast(payload) {
+  const data = JSON.stringify(payload);
+  for (const [client] of clients) {
+    if (client.readyState === 1) {
+      //1 = OPEN}
+      client.send(data);
+    }
+  }
+}
+
+const PORT = 3000; 
+httpServer.listen(PORT, () => {
+  console.log(`Chat server running at http://localhost:${PORT}`);
+  console.log(`WebSocket server listening on ws://localhost:${PORT}`);
+})
