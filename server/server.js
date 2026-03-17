@@ -5,7 +5,7 @@ const path = require("path");
 
 // Serve the client HTML file
 const httpServer = http.createServer((req, res) => {
-  const filePath = path.join(__dirname, "client.html");
+  const filePath = path.join(__dirname, "../app/index.html");
   fs.readFile(filePath, (err, data) => {
     if (err) {
       res.writeHead(404);
@@ -78,8 +78,8 @@ function broadcast(payload) {
   }
 }
 
-const PORT = 3000; 
+const PORT = 3000;
 httpServer.listen(PORT, () => {
   console.log(`Chat server running at http://localhost:${PORT}`);
   console.log(`WebSocket server listening on ws://localhost:${PORT}`);
-})
+});
