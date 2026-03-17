@@ -38,6 +38,32 @@ wss.on("connection", (ws) => {
 
       clients.set(ws, username);
       console.log(`+ ${username} joined (${clients.size} online)`);
+
+      broadcast({
+        type: "system",
+        text: `${username} joined the chat`,
+        count: clients.size,
+      });
+    }
+
+    if (msg.type === "chat" && username) {
+      console.log(`[${username}] ${msg.text}`);
+      // Broadcast the message to all connected clients
+      broadcast({ type: "chat", username, text: msg.text, ts: Date.now() });
     }
   });
+
+  ws.on("close", () => {
+    if (username) {
+      clients.delete(ws);
+      console.log(`- ${username} left (${clients.size} online)`);
+      broadcast({
+        type: "system",
+        text: `${username} left the chat`,
+        count: clients.size,
+      });
+    }
+  });
+
+  ws.on("error", (err) => console.error("WebSocket error:", err));
 });
