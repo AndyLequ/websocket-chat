@@ -5,91 +5,291 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Websockets</title>
     <style>
-      * {box-sizing: border-box; margin: 0; padding: 0;}
+        * {box-sizing: border-box; margin: 0; padding: 0;}
 
-      body {
-        font-family: system-ui, sans-serif;
-        background: #f0f2f5;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-      }
+        body {
+          font-family: system-ui, sans-serif;
+          background: #f0f2f5;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+        }
 
-      #app { width: 420px; display: flex; flex-direction: column; height: 90vh; background: white; border-radius: 12px; box-shadow: 0 4px 24px rbga(0,0,0,0.1); overflow:hidden;}
+        #app { width: 420px; display: flex; flex-direction: column; height: 90vh; background: white; border-radius: 12px; box-shadow: 0 4px 24px rbga(0,0,0,0.1); overflow:hidden;}
 
-      /* Join screen */
-      #join-screen{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        padding: 40px;
-        flex: 1;
-      }
+        /* Join screen */
+        #join-screen{
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          padding: 40px;
+          flex: 1;
+        }
 
-      #join-screen h1 {font-size: 22px; font-weight: 500; color: #1a1a1a;}
-      #join-screen p { font-size: 14px; color: #666;}
-      #username-input {
-        width: 100%;
-        padding: 10px 14px;
-        border: 1.5px solid #ddd;
-        border-radius: 8px;
-        font-size: 15px;
-        outline: none;
-        transition: border-color .2s;
-      }
-      #username-input:focus{border-color: #534AB7;}
-      #join-btn {
-        width: 100%;
-        padding: 10px;
+        #join-screen h1 {font-size: 22px; font-weight: 500; color: #1a1a1a;}
+        #join-screen p { font-size: 14px; color: #666;}
+        #username-input {
+          width: 100%;
+          padding: 10px 14px;
+          border: 1.5px solid #ddd;
+          border-radius: 8px;
+          font-size: 15px;
+          outline: none;
+          transition: border-color .2s;
+        }
+        #username-input:focus{border-color: #534AB7;}
+        #join-btn {
+          width: 100%;
+          padding: 10px;
+          background: #534AB7;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 15px;
+          cursor: pointer;
+          transition: background .2x;
+        }
+        #join-btn:hover {background: #3C3489;}
+
+        /* Chat screen */
+        #chat-screen {display: none; flex-direction: column; flex: 1; min-height: 0;}
+
+        #header .title{ font-size: 16px; font-weight: 500; }      }
+        #online-count{font-size: 13px; opacity: 0.85;}
+
+        #messages {
+          flex: 1;
+          overflow-y: auto;
+          padding: 16p;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .msg-row {display: flex; flex-direction: column; max-width: 80%;}
+        .msg-row.me{align-self: flex-end; align-items: flex-end;}
+        .msg-row.other{ align-self: flex-start; align-items: flex-start;}
+
+        .msg-name{ font-size: 11px; color: #888; margin-bottom: 3px;}
+        .msg-bubble{
+          padding: 8px 12px;
+          border-radius: 14px;
+          font-size: 14px;
+          line-height: 1.4;
+          word-break: break-word;
+        }
+        .me .msg-bubble { background: #534AB7; color: white; border-bottom-right-radius: 4px;}
+        .other .msg-bubble{ background: #f0f2f5; color: #1a1a1a; border-bottom-left-radius: 4px;}
+        .msg-time{font-size: 10px; color: #aaa; margin-top: 3px}
+
+        .system-msg{
+          text-align:center;
+          font-size: 12px;
+          color: #999;
+          padding: 4px 0;
+        }
+
+        #input-row{
+          display: flex;
+          gap: 8px;
+          padding: 12px 16px;
+          border-top: 1px solid #eee;
+        }
+
+        #msg-input {
+          flex: 1;
+          padding: 9px 14px;
+          border: 1.5px solid #ddd;
+          border-radius: 20px;
+          font-size: 14px;
+          outline: none;
+          transition: border-color .2s;
+        }
+        #msg-input:focus { border-color: #534AB7;}
+        #send-btn {
+        width: 38px;
+        height: 38px;
         background: #534AB7;
-        color: white;
         border: none;
-        border-radius: 8px;
-        font-size: 15px;
+        border-radius: 50%;
         cursor: pointer;
-        transition: background .2x;
-      }
-      #join-btn:hover {background: #3C3489;}
-
-      /* Chat screen */
-      #chat-screen {display: none; flex-direction: column; flex: 1; min-height: 0;}
-
-      #header .title{ font-size: 16px; font-weight: 500; }      }
-      #online-count{font-size: 13px; opacity: 0.85;}
-
-      #messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 16p;
         display: flex;
-        flex-direction: column;
-        gap: 8px;
+        align-items: center;
+        justify-content: center;
+        transition: background .2s;
+        flex-shrink: 0;
       }
+      #send-btn:hover { background: #3C3489; }
+      #send-btn svg { display: block; }
 
-      .msg-row {display: flex; flex-direction: column; max-width: 80%;}
-      .msg-row.me{align-self: flex-end; align-items: flex-end;}
-      .msg-row.other{ align-self: flex-start; align-items: flex-start;}
-
-      .msg-name{ font-size: 11px; color: #888; margin-bottom: 3px;}
-      .msg-bubble{
-        padding: 8px 12px;
-        border-radius: 14px;
-        font-size: 14px;
-        line-height: 1.4;
-        word-break: break-word;
+      #status-bar {
+        font-size: 12px;
+        padding: 6px 16px;
+        background: #fff8e1;
+        color: #795500;
+        text-align: center;
+        display: none;
       }
+      #status-bar.visible { display: block; }
     </style>
     <link rel="stylesheet" href="style.css" />
     <script defer src="app.js"></script>
   </head>
   <body>
-    <form>
-      <input type="text" placeholder="Your message" />
-      <button>Send</button>
-    </form>
-    <ul></ul>
+    <div id="app">
+      <!-- Join-screen -->
+      <div id="join-screen">
+        <h1 id="join-screen">Websocket Chat</h1>
+        <p>Enter a username to join the chat room</p>
+        <input
+          id="username-input"
+          type="text"
+          placeholder="Your name..."
+          maxlength="20"
+          autocomplete="off"
+        />
+        <button id="join-btn">Join Chat</button>
+      </div>
+
+      <!-- Chat screen -->
+      <div id="chat-screen">
+        <div id="header">
+          <span class="title">Chat Room</span>
+          <span id="online-count">0 online</span>
+        </div>
+        <div id="status-bar">Connecting...</div>
+        <div id="messages"></div>
+        <div id="input-row">
+          <input
+            id="msg-input"
+            type="text"
+            placeholder="Tye a message..."
+            maxlength="500"
+            autocomplete="off"
+            disabled
+          />
+          <button>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M2 8L14 2L10 8L14 14L2 8Z"
+                fill="white"
+                stroke="white"
+                stroke-linejoin="round"
+                stroke-width="0.5"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let ws;
+      let myUsername;
+
+      // --DOM refs --
+      const joinScreen = document.getElementById("join-screen");
+      const chatScreen = document.getElementById("chat-screen");
+      const usernameInput = document.getElementById("userame-input");
+      const joinBtn = document.getElementById("messages");
+      const messages = document.getElementById("messages");
+      const msgInput = document.getElementById("msg-input");
+      const sendBtn = document.getElementById("send-btn");
+      const onlineCount = document.getElementById("online-count");
+      const statusBar = document.getElementById("status-bar");
+
+      // --Join--
+      joinBtn.addEventListener("click", joinChat);
+      usernameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") joinChat();
+      });
+
+      function joinChat() {
+        const name = usernameInput.value.trim();
+        if (!name) return;
+        myUsername = name;
+        joinScreen.style.display = "none";
+        chatScreen.style.display = "flex";
+        connect();
+      }
+
+      // --Websocket--
+      function connect() {
+        setStatus("Connecting...", true);
+        ws = new WebSocket(`ws://${location.host}`);
+
+        ws.addEventListener("open", () => {
+          setStatus("", fales);
+          msgInput.disabled = false;
+          sendBtn.disabled = false;
+          // Send join event with username
+          ws.send(JSON.stringify({ type: "join", username: myUsername }));
+          msgInput.focus();
+        });
+
+        ws.addEventListener("message", ({ data }) => {
+          const msg = JSON.parse(data);
+
+          if (msg.type === "system") {
+            appendSystem(msg.text);
+            if (msg.count !== undefined)
+              onlineCount.textContent = `${msg.count} online`;
+          }
+
+          if (msg.type === "chat") {
+            appendMessage(
+              msg.username,
+              msg.text,
+              msg.ts,
+              msg.username === myUsername,
+            );
+          }
+        });
+
+        ws.addEventListener('close', () => {
+          setStatus('Disconnected - reload to reconnect', true);
+          msgInput.disabled = true;
+          sendBtn.disabled = true;
+        })
+
+        ws.addEventListener('error', () => {
+          setStatus('Connection error', true);
+        })
+
+      }
+
+      // -- Send --
+      sendBtn.addEventListener('click', sendMessage);
+      msgInput.addEventListener('keydown', e => {if(e.key === 'Enter' && !e.shiftKey) sendMessage();});
+
+      function sendMessage(){
+        const text = msgInput.value.trim();
+        if(!text || ws.readyState !== WebSocket.OPEN) return;
+        ws.send(JSON.stringify({type: 'chat', text}));
+        msgInput.value = '';
+      }
+
+      // -- Render --
+      function appendMessage(username,, text, ts, isMe){
+        const row = document.createElement('div');
+        row.classList.add('msg-row', isMe ? 'me' : 'other');
+
+        const time = new Date(ts).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+        
+        row.innerHTML = `
+          ${!isMe ? `<span class="msg-name">${esc(username)}</span>` : ''}
+          <div class="msg-bubble">${esc(text)}</div>
+          <span class="msg-time">${time}</span>
+          `;
+        messages.appendChild(row);
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      
+
+    </script>
   </body>
 </html>
